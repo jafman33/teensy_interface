@@ -4,9 +4,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
 
-#include "udp_server/udp_server.hpp"
-#include "parameter/parameter.hpp"
-#include "msg_utils/msg_utils.hpp"
+#include "udp_server.hpp"
+// #include "parameter/parameter.hpp"
+// #include "msg_utils/msg_utils.hpp"
 
 #include <chrono>
 #include <functional>
@@ -31,9 +31,9 @@ namespace atl
 // ///////////////////
 TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & options)
 : Node("teensy_interface", options),
-  udp_(std::make_unique<atl::UDPServer>())
+  udp_(std::make_unique<atl::UDPServer>(true))
 {
-  initParamsInNode(*this, prm_, "", false, true);
+  // initParamsInNode(*this, prm_, "", false, true);
 
   // if (prm_.n_servos > nServos || prm_.n_servos < 1) {
   //   throw std::runtime_error("Unsupported number of servos");
@@ -42,23 +42,22 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
   // Create the subscriptions
   rclcpp::SensorDataQoS inputQoS;
   inputQoS.keep_last(1);
-  subInput_ = create_subscription<atl_msgs::msg::ServosInput>(
-    "input", inputQoS,
-    [this](atl_msgs::msg::ServosInput::SharedPtr msg) {
-      subInputCb(std::move(msg));
+  subJoystick_ = create_subscription<sensor_msgs::msg::Joy>(
+    "joy", inputQoS,
+    [this](sensor_msgs::msg::Joy::SharedPtr msg) {
+      subJoystickCb(std::move(msg));
     });
 
   // Create the publishers
   pubDepth_ = create_publisher<atl_msgs::msg::Depth>(
     "depth", rclcpp::SystemDefaultsQoS());
 
-  // set up UDP communication
+    // set up UDP communication
   udp_->init(
     prm_.udp.receive_buffer_size,
     prm_.udp.send_port,
     prm_.udp.teensy_ip,
-    prm_.udp.receive_port,
-    prm_.udp.teensy_ip
+    prm_.udp.receive_port
   );
 
   udp_->subscribe(
@@ -67,7 +66,6 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
     });
 
   RCLCPP_INFO(get_logger(), "Teensy Interface Node started");
-  rclcppLogParams(get_logger(), prm_, 2, '_');
 }
 
 //////////////////
@@ -75,14 +73,14 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
 //////////////////
 void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
 {
-  constexpr std::size_t msgLen = (nDepthSensors) * 4;
+  // constexpr std::size_t msgLen = (nDepthSensors) * 4;
 
-  if (msg.data.size() != msgLen) {
-    RCLCPP_ERROR(
-      get_logger(), "Teensy UDP message must be of length %lu, received %lu.",
-      msgLen, msg.data.size());
-    throw std::runtime_error("Teensy UDP message has incorrect size.");
-  }
+  // if (msg.data.size() != msgLen) {
+  //   RCLCPP_ERROR(
+  //     get_logger(), "Teensy UDP message must be of length %lu, received %lu.",
+  //     msgLen, msg.data.size());
+  //   throw std::runtime_error("Teensy UDP message has incorrect size.");
+  // }
 
   const auto tNow = now();
   atl_msgs::msg::Depth depthMsg;
@@ -105,7 +103,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
 // ///////////////
 // UDP Msg Forward
 // ///////////////
-void TeensyInterfaceComponent::subInputCb(sensor_msgs::msg::Joy::SharedPtr && msg)
+void TeensyInterfaceComponent::subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg)
 {
   std::lock_guard lck(msgMtx_);
 
@@ -117,7 +115,7 @@ void TeensyInterfaceComponent::subInputCb(sensor_msgs::msg::Joy::SharedPtr && ms
   // }
 
   // forward message through UDP
-  std::vector<uint8_t> u((nServos + 3) * 4); 
+  std::vector<uint8_t> u((nServos + 2) * 4); 
   std::size_t oft = 0;
 
   // Timestamp
@@ -125,24 +123,25 @@ void TeensyInterfaceComponent::subInputCb(sensor_msgs::msg::Joy::SharedPtr && ms
   const uint32_t time_ms = static_cast<uint32_t>((time_ns - t0_) / 1000000U);
   memcpy(u.data() + oft, &time_ms, 4);
   oft += 4;
-
-  // Active
-  const uint32_t active = msg->active;
-  memcpy(u.data() + oft, &active, 4);
-  oft += 4;
+  // std::cout<<time_ms<<std::endl;
 
   // Servo Inputs
-  for (std::size_t i = 0; i < prm_.n_servos; i++) {
+  for (std::size_t i = 0; i < nServos; i++) {
     // const float del = msg->inputs[i].delta;
-    const float del = msg-> axes[i]
+    const float del = msg-> axes[i];
     memcpy(u.data() + oft, &del, 4);
     oft += 4;
   }
+  // std::cout<< msg-> axes[0]<<std::endl;
+  // std::cout<< msg-> axes[1]<<std::endl;
+
 
   // Sync byte
   const uint32_t sync = std::exchange(sync_, false);
   memcpy(u.data() + oft, &sync, 4);
   oft += 4;
+  // std::cout<<sync<<std::endl;
+
 
   udp_->sendMsg(u);
 }

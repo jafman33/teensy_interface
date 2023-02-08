@@ -9,11 +9,11 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(atl_msgs REQUIRED)
-# a
 
 # Component
 add_library(${PROJECT_NAME}_component SHARED
-  src/${PROJECT_NAME}_component.cpp)
+  src/${PROJECT_NAME}_component.cpp
+  src/udp_server.cpp)
 ament_target_dependencies(${PROJECT_NAME}_component
   rclcpp
   rclcpp_components

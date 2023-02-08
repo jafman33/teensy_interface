@@ -4,15 +4,10 @@
 #define TEENSY_INTERFACE__TEENSY_INTERFACE_COMPONENT_HPP_
 
 #include <rclcpp/rclcpp.hpp>
-#include "udp_server/udp_server.hpp"
 #include <boost/fusion/adapted/struct.hpp>
 
-// #include <atl_library/clock_traits_ros.hpp>
-// #include <atl_library/integrator.hpp>
-// #include <atl_library/msg_utils.hpp>
+#include "udp_server.hpp"
 
-// #include <atl_msgs/msg/servo_input.hpp>
-// #include <atl_msgs/msg/servos_input.hpp>
 #include <atl_msgs/msg/depth.hpp>
 
 #include <sensor_msgs/msg/joy.hpp>
@@ -31,7 +26,7 @@ class UDPServer;
 
 struct TeensyUdpParams
 {
-  std::string teensy_ip{"192.168.1.3"};
+  std::string teensy_ip{"10.250.225.93"};
   uint16_t send_port{1560};
   uint16_t receive_port{1561};
   uint32_t receive_buffer_size{1024};
@@ -69,14 +64,12 @@ public:
 
 private:
   // Subscriptions
-  // rclcpp::Subscription<atl_msgs::msg::ServosInput>::SharedPtr subInput_;
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subJoystick_;
 
   // Publishers
   rclcpp::Publisher<atl_msgs::msg::Depth>::SharedPtr pubDepth_;
 
   // Callbacks
-  // void subInputCb(atl_msgs::msg::ServosInput::SharedPtr && msg);
   void subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg);
   void udpCb(const UDPServer::UDPMsg & msg);
 
@@ -86,9 +79,11 @@ private:
   std::size_t iter_ = 0;
   bool sync_ = true;
   TeensyInterfaceParams prm_;
+
   uint32_t task_ = 0;
   uint32_t ctrlMode_ = 0;
   std::mutex msgMtx_;
+
 };
 
 }  // namespace atl

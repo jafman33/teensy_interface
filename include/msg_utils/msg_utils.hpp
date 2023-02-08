@@ -3,7 +3,7 @@
 #ifndef TEENSY_INTERFACE__MSG_UTILS_HPP_
 #define TEENSY_INTERFACE__MSG_UTILS_HPP_
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <sophus/se3.hpp>
 
 #include <builtin_interfaces/msg/time.hpp>
@@ -14,7 +14,7 @@
 // #include <atl_msgs/msg/ctrl_state.hpp>
 // #include <atl_msgs/msg/lla.hpp>
 // #include <atl_msgs/msg/lla_pose.hpp>
-#include <atl_msgs/msg/engine_input.hpp>
+// #include <atl_msgs/msg/engine_input.hpp>
 // #include <atl_msgs/msg/engines_input.hpp>
 // #include <atl_msgs/msg/boat.hpp>
 // #include <atl_msgs/msg/dock.hpp>
