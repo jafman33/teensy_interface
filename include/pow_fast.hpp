@@ -1,11 +1,10 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__POW_FAST_HPP_
-#define BPS_LIBRARY__POW_FAST_HPP_
+#ifndef TEENSY_INTERFACE__POW_FAST_HPP_
+#define TEENSY_INTERFACE__POW_FAST_HPP_
 
 #include <cstdint>
 #include <type_traits>
 
-namespace bps
+namespace atl
 {
 
 /***************************************************************************
@@ -80,6 +79,6 @@ constexpr TBase powFast(const TBase b) noexcept
   return detail::powFastImpl(b, std::make_index_sequence<e>{});
 }
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__POW_FAST_HPP_
+#endif  // TEENSY_INTERFACE__POW_FAST_HPP_

@@ -1,6 +1,5 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__STATIC_FOR_HPP_
-#define BPS_LIBRARY__STATIC_FOR_HPP_
+#ifndef TEENSY_INTERFACE__STATIC_FOR_HPP_
+#define TEENSY_INTERFACE__STATIC_FOR_HPP_
 
 #include <type_traits>
 #include <utility>
@@ -9,7 +8,7 @@
 #include "integer_sequence.hpp"
 #include "introspection.hpp"
 
-namespace bps
+namespace atl
 {
 /***************************************************************************
  * \brief Static for loop over integral_constant
@@ -142,6 +141,6 @@ void static_for_aggregate(Seq && s, Lambda && f)
   }
 }
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__STATIC_FOR_HPP_
+#endif  // TEENSY_INTERFACE__STATIC_FOR_HPP_

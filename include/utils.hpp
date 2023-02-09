@@ -1,6 +1,5 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__UTILS_HPP_
-#define BPS_LIBRARY__UTILS_HPP_
+#ifndef TEENSY_INTERFACE__UTILS_HPP_
+#define TEENSY_INTERFACE__UTILS_HPP_
 
 #include <array>
 #include <bitset>
@@ -23,7 +22,7 @@
 #include "integer_pack.hpp"
 #include "introspection.hpp"
 
-namespace bps
+namespace atl
 {
 
 /***************************************************************************
@@ -317,14 +316,14 @@ template<typename R, typename Cls, typename ... Args>
 struct signature<R (Cls::*)(Args...)>
 {
   using return_type = R;
-  using argument_type = bps::TypePack<Args...>;
+  using argument_type = atl::TypePack<Args...>;
 };
 
 template<typename R, typename Cls, typename ... Args>
 struct signature<R (Cls::*)(Args...) const>
 {
   using return_type = R;
-  using argument_type = bps::TypePack<Args...>;
+  using argument_type = atl::TypePack<Args...>;
 };
 
 /***************************************************************************
@@ -449,7 +448,7 @@ inline std::string engine_name(const std::size_t nEng, const std::size_t engId)
   }
 }
 
-}  // namespace bps
+}  // namespace atl
 
 template<typename T>
 std::ostream & operator<<(std::ostream & os, const std::vector<T> & v)
@@ -489,4 +488,4 @@ std::ostream & operator<<(std::ostream & os, const std::array<T, sz> & v)
   return os;
 }
 
-#endif  // BPS_LIBRARY__UTILS_HPP_
+#endif  // TEENSY_INTERFACE__UTILS_HPP_

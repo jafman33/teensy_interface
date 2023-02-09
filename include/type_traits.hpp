@@ -1,6 +1,5 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__TYPE_TRAITS_HPP_
-#define BPS_LIBRARY__TYPE_TRAITS_HPP_
+#ifndef TEENSY_INTERFACE__TYPE_TRAITS_HPP_
+#define TEENSY_INTERFACE__TYPE_TRAITS_HPP_
 
 #include <optional>
 #include <string_view>
@@ -15,7 +14,7 @@
 
 #include "eigen_traits.hpp"
 
-namespace bps
+namespace atl
 {
 
 /***************************************************************************
@@ -27,15 +26,15 @@ constexpr auto type_name() noexcept
   std::string_view name = "Error: unsupported compiler", prefix, suffix;
 #ifdef __clang__
   name = __PRETTY_FUNCTION__;
-  prefix = "auto bps::type_name() [T = ";
+  prefix = "auto atl::type_name() [T = ";
   suffix = "]";
 #elif defined(__GNUC__)
   name = __PRETTY_FUNCTION__;
-  prefix = "constexpr auto bps::type_name() [with T = ";
+  prefix = "constexpr auto atl::type_name() [with T = ";
   suffix = "]";
 #elif defined(_MSC_VER)
   name = __FUNCSIG__;
-  prefix = "auto __cdecl bps::type_name<";
+  prefix = "auto __cdecl atl::type_name<";
   suffix = ">(void) noexcept";
 #endif
   name.remove_prefix(prefix.size());
@@ -177,6 +176,6 @@ inline constexpr bool false_v = false;
 template<typename ...>
 inline constexpr bool true_v = true;
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__TYPE_TRAITS_HPP_
+#endif  // TEENSY_INTERFACE__TYPE_TRAITS_HPP_

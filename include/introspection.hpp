@@ -1,6 +1,5 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__INTROSPECTION_HPP_
-#define BPS_LIBRARY__INTROSPECTION_HPP_
+#ifndef TEENSY_INTERFACE__INTROSPECTION_HPP_
+#define TEENSY_INTERFACE__INTROSPECTION_HPP_
 
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/mpl/range_c.hpp>
@@ -16,7 +15,7 @@
 #include <utility>
 #include <tuple>
 
-namespace bps
+namespace atl
 {
 namespace detail
 {
@@ -78,6 +77,6 @@ auto bind_to_tuple(Seq & s)
     std::make_index_sequence<boost::fusion::result_of::size<Seq_t>::value>{});
 }
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__INTROSPECTION_HPP_
+#endif  // TEENSY_INTERFACE__INTROSPECTION_HPP_

@@ -1,6 +1,5 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__YAML_HPP_
-#define BPS_LIBRARY__YAML_HPP_
+#ifndef TEENSY_INTERFACE__YAML_HPP_
+#define TEENSY_INTERFACE__YAML_HPP_
 
 #include <yaml-cpp/yaml.h>
 #include <boost/mpl/range_c.hpp>
@@ -20,7 +19,7 @@
 
 #include "utils.hpp"
 
-namespace bps
+namespace atl
 {
 
 /* Recursive YAML reader for boost fusion containers */
@@ -36,7 +35,7 @@ struct YAMLReader
     using TypeAtIndex = typename boost::fusion::result_of::value_at<Seq, Index>::type;
     const std::string name(boost::fusion::extension::struct_member_name<Seq, Index::value>::call());
     if (!yaml_[name] || yaml_[name].IsNull()) {
-      if constexpr (bps::is_std_optional_v<TypeAtIndex>) {  //NOLINT
+      if constexpr (atl::is_std_optional_v<TypeAtIndex>) {  //NOLINT
         boost::fusion::at<Index>(seq_) = std::nullopt;
         return;
       } else {
@@ -76,7 +75,7 @@ private:
   const Seq & seq_;
 };
 
-}  // namespace bps
+}  // namespace atl
 
 namespace YAML
 {
@@ -90,14 +89,14 @@ struct convert
     if constexpr (boost::fusion::traits::is_sequence<T>::value) {
       using Indices = boost::mpl::range_c<int, 0, boost::fusion::result_of::size<T>::value>;
       Node yaml;
-      boost::mpl::for_each<Indices>(bps::YAMLWriter(yaml, val));
+      boost::mpl::for_each<Indices>(atl::YAMLWriter(yaml, val));
       return yaml;
-    } else if constexpr (bps::is_scoped_enum_v<T>) {  //NOLINT
+    } else if constexpr (atl::is_scoped_enum_v<T>) {  //NOLINT
       using UT = std::underlying_type_t<T>;
       return Node(static_cast<UT>(val));
-    } else if constexpr (bps::is_std_tuple_v<T>) {  //NOLINT
+    } else if constexpr (atl::is_std_tuple_v<T>) {  //NOLINT
       Node yaml(NodeType::Sequence);
-      bps::static_for_index<std::tuple_size_v<T>>(
+      atl::static_for_index<std::tuple_size_v<T>>(
         [&](auto i) {
           yaml.push_back(std::get<i.value>(val));
         });
@@ -111,7 +110,7 @@ struct convert
       }
       return yaml;
 
-    } else if constexpr (bps::is_std_optional_v<T>) {  //NOLINT
+    } else if constexpr (atl::is_std_optional_v<T>) {  //NOLINT
       if (val.has_value()) {
         return Node(val.value());
       }
@@ -119,7 +118,7 @@ struct convert
 
     } else {
       static_assert(
-        ::bps::false_v<T>,
+        ::atl::false_v<T>,
         "Unsupported type for YAML decoding.");
     }
   }
@@ -129,12 +128,12 @@ struct convert
     if constexpr (boost::fusion::traits::is_sequence<T>::value) {
       using Indices = boost::mpl::range_c<int, 0, boost::fusion::result_of::size<T>::value>;
       try {
-        boost::mpl::for_each<Indices>(bps::YAMLReader(yaml, val));
+        boost::mpl::for_each<Indices>(atl::YAMLReader(yaml, val));
       } catch (const std::exception & e) {
         return false;
       }
       return true;
-    } else if constexpr (bps::is_scoped_enum_v<T>) {  //NOLINT
+    } else if constexpr (atl::is_scoped_enum_v<T>) {  //NOLINT
       try {
         using UT = std::underlying_type_t<T>;
         const auto v = yaml.as<UT>();
@@ -147,7 +146,7 @@ struct convert
         return false;
       }
       return true;
-    } else if constexpr (bps::is_std_tuple_v<T>) {  //NOLINT
+    } else if constexpr (atl::is_std_tuple_v<T>) {  //NOLINT
       if (!yaml.IsSequence()) {
         return false;
       }
@@ -155,7 +154,7 @@ struct convert
         return false;
       }
 
-      bps::static_for_index<std::tuple_size_v<T>>(
+      atl::static_for_index<std::tuple_size_v<T>>(
         [&](auto i) {
           std::get<i.value>(val) = yaml[i].template as<std::tuple_element_t<i.value, T>>();
         });
@@ -185,7 +184,7 @@ struct convert
       }
 
       return true;
-    } else if constexpr (bps::is_std_optional_v<T>) {  //NOLINT
+    } else if constexpr (atl::is_std_optional_v<T>) {  //NOLINT
       if (!yaml || yaml.IsNull()) {
         val = std::nullopt;
         return true;
@@ -199,7 +198,7 @@ struct convert
       return true;
     } else {
       static_assert(
-        ::bps::false_v<T>,
+        ::atl::false_v<T>,
         "Unsupported type for YAML decoding.");
     }
   }
@@ -289,4 +288,4 @@ struct as_if<std::string, std::optional<std::string>>
 
 }  // namespace YAML
 
-#endif  // BPS_LIBRARY__YAML_HPP_
+#endif  // TEENSY_INTERFACE__YAML_HPP_

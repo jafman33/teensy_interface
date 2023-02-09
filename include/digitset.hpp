@@ -1,12 +1,11 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__DIGITSET_HPP_
-#define BPS_LIBRARY__DIGITSET_HPP_
+#ifndef TEENSY_INTERFACE__DIGITSET_HPP_
+#define TEENSY_INTERFACE__DIGITSET_HPP_
 
 #include <cstdint>
 #include <array>
 #include <utility>
 
-namespace bps
+namespace atl
 {
 
 template<std::size_t _len, uint8_t _base = 10>
@@ -110,6 +109,6 @@ private:
   std::array<uint8_t, _len> data_{};
 };
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__DIGITSET_HPP_
+#endif  // TEENSY_INTERFACE__DIGITSET_HPP_

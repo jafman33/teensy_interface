@@ -1,6 +1,5 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__INTEGER_PACK_HPP_
-#define BPS_LIBRARY__INTEGER_PACK_HPP_
+#ifndef TEENSY_INTERFACE__INTEGER_PACK_HPP_
+#define TEENSY_INTERFACE__INTEGER_PACK_HPP_
 
 #include <variant>
 #include <array>
@@ -12,7 +11,7 @@
 #include "type_pack.hpp"
 #include "type_traits.hpp"
 
-namespace bps
+namespace atl
 {
 
 /***************************************************************************
@@ -248,6 +247,6 @@ using makeIndexPackVariantMonostate =
   typename makeIndexPack<Vs...>::template apply<T>::template unpack_prefixed<std::variant,
     std::monostate>;
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__INTEGER_PACK_HPP_
+#endif  // TEENSY_INTERFACE__INTEGER_PACK_HPP_

@@ -1,12 +1,11 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__INTEGER_SEQUENCE_HPP_
-#define BPS_LIBRARY__INTEGER_SEQUENCE_HPP_
+#ifndef TEENSY_INTERFACE__INTEGER_SEQUENCE_HPP_
+#define TEENSY_INTERFACE__INTEGER_SEQUENCE_HPP_
 
 #include <type_traits>
 #include <utility>
 #include <tuple>
 
-namespace bps
+namespace atl
 {
 
 /***************************************************************************
@@ -148,6 +147,6 @@ template<typename ... T>
 using iseq_join_t = typename iseq_join<T...>::type;
 
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__INTEGER_SEQUENCE_HPP_
+#endif  // TEENSY_INTERFACE__INTEGER_SEQUENCE_HPP_

@@ -1,6 +1,5 @@
-// Copyright 2020 Yamaha Motor Corporation, USA
-#ifndef BPS_LIBRARY__EIGEN_TRAITS_HPP_
-#define BPS_LIBRARY__EIGEN_TRAITS_HPP_
+#ifndef TEENSY_INTERFACE__EIGEN_TRAITS_HPP_
+#define TEENSY_INTERFACE__EIGEN_TRAITS_HPP_
 
 // #include <Eigen/Core>
 #include <eigen3/Eigen/Core>
@@ -12,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace bps
+namespace atl
 {
 
 /***************************************************************************
@@ -58,6 +57,6 @@ template<typename T1, typename T2, typename Compare = std::less<T1>>
 using map_aligned = std::map<T1, T2, Compare, Eigen::aligned_allocator<std::pair<const T1, T2>>>;
 
 
-}  // namespace bps
+}  // namespace atl
 
-#endif  // BPS_LIBRARY__EIGEN_TRAITS_HPP_
+#endif  // TEENSY_INTERFACE__EIGEN_TRAITS_HPP_
