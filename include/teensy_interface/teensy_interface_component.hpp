@@ -9,7 +9,7 @@
 #include "udp_server.hpp"
 
 #include <atl_msgs/msg/depth.hpp>
-
+#include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
 #include <optional>
@@ -68,6 +68,7 @@ private:
 
   // Publishers
   rclcpp::Publisher<atl_msgs::msg::Depth>::SharedPtr pubDepth_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pubImu_;
 
   // Callbacks
   void subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg);

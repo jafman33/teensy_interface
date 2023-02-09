@@ -19,7 +19,6 @@
 using std::string;
 
 constexpr static std::size_t nServos = 2;
-constexpr static std::size_t nDepthSensors = 1;
 
 namespace atl
 {
@@ -49,6 +48,8 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
   // Create the publishers
   pubDepth_ = create_publisher<atl_msgs::msg::Depth>(
     "depth", rclcpp::SystemDefaultsQoS());
+  pubImu_ = create_publisher<sensor_msgs::msg::Imu>(
+    "imu", rclcpp::SystemDefaultsQoS());
 
     // set up UDP communication
   udp_->init(
@@ -66,32 +67,62 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
   RCLCPP_INFO(get_logger(), "Teensy Interface Node started");
 }
 
+
 //////////////////
 // UDP Msg Receive
 //////////////////
 void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
 {
-  // constexpr std::size_t msgLen = (nDepthSensors) * 4;
+  // Lin_acc(3) + Ang_vel(3) + Quat(4) + depth(1) + temp(1)
+  constexpr std::size_t msgLen = (3+3+4+1+1) * 4;
 
-  // if (msg.data.size() != msgLen) {
-  //   RCLCPP_ERROR(
-  //     get_logger(), "Teensy UDP message must be of length %lu, received %lu.",
-  //     msgLen, msg.data.size());
-  //   throw std::runtime_error("Teensy UDP message has incorrect size.");
-  // }
-
-  const auto tNow = now();
-  atl_msgs::msg::Depth depthMsg;
-  depthMsg.header.stamp = tNow;
-  depthMsg.depth.resize(nDepthSensors);
+  if (msg.data.size() != msgLen) {
+    RCLCPP_ERROR(
+      get_logger(), "Teensy UDP message configured to be of length %lu, received %lu.",
+      msgLen, msg.data.size());
+    throw std::runtime_error("Teensy UDP message has incorrect size.");
+  }
 
   std::size_t oft = 0;
+  const auto tNow = now();
 
-  // Depth Sensor Receive
-  for (std::size_t i = 0; i < nDepthSensors; i++) {
-    depthMsg.depth[i] = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
-    oft += 4;
-  }
+  ///////////
+  // IMU Data
+  sensor_msgs::msg::Imu imuMsg;
+  imuMsg.header.stamp = tNow;
+  // imuMsg.status - to do in the future.
+  imuMsg.linear_acceleration.x = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.linear_acceleration.y = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.linear_acceleration.z = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.angular_velocity.x = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.angular_velocity.y = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.angular_velocity.z = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.orientation.x = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.orientation.y = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.orientation.z = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  imuMsg.orientation.w = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  pubImu_->publish(std::move(imuMsg));
+
+  ////////////////////////
+  // Depth and Temperature
+  atl_msgs::msg::Depth depthMsg;
+  depthMsg.header.stamp = tNow;
+  // depthMsg.status = -1;
+  depthMsg.depth = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  // depthMsg.temperature = 112.9;
+  depthMsg.temperature = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
   pubDepth_->publish(std::move(depthMsg));
 
   iter_++;

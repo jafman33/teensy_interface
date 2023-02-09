@@ -56,9 +56,9 @@ public:
   void init(
     uint32_t recvMaxSize,
     uint16_t sendPort = 1560,
-    std::string_view sendAddr = "",
+    std::string_view sendAddr = "10.250.225.93",
     uint16_t recvPort = 1561,
-    std::string_view recvAddr = "");
+    std::string_view recvAddr = "10.250.225.93");
 
   UDPMsg getMsg();
 
