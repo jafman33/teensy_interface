@@ -1,4 +1,3 @@
-// Copyright 2023 ATL Robotics, USA
 
 #include "udp_server.hpp"
 

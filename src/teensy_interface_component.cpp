@@ -1,4 +1,3 @@
-// Copyright 2023 ATL Robotics, USA
 #include "teensy_interface/teensy_interface_component.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -31,7 +30,6 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
   udp_(std::make_unique<atl::UDPServer>(true))
 {
   // initParamsInNode(*this, prm_, "", false, true);
-
   // if (prm_.n_servos > nServos || prm_.n_servos < 1) {
   //   throw std::runtime_error("Unsupported number of servos");
   // }
@@ -48,10 +46,14 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
   // Create the publishers
   pubDepth_ = create_publisher<atl_msgs::msg::Depth>(
     "depth", rclcpp::SystemDefaultsQoS());
+
   pubImu_ = create_publisher<sensor_msgs::msg::Imu>(
     "imu", rclcpp::SystemDefaultsQoS());
 
-    // set up UDP communication
+  pubLeak_ = create_publisher<atl_msgs::msg::Leak>(
+    "leak", rclcpp::SystemDefaultsQoS());
+
+  // set up UDP communication
   udp_->init(
     prm_.udp.receive_buffer_size,
     prm_.udp.send_port,
@@ -73,8 +75,8 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
 //////////////////
 void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
 {
-  // Lin_acc(3) + Ang_vel(3) + Quat(4) + depth(1) + temp(1)
-  constexpr std::size_t msgLen = (3+3+4+1+1) * 4;
+  // Lin_acc(3) + Ang_vel(3) + Quat(4) + depth(1) + temp(1) + leak(1)
+  constexpr std::size_t msgLen = (3+3+4+1+1+1) * 4;
 
   if (msg.data.size() != msgLen) {
     RCLCPP_ERROR(
@@ -125,6 +127,14 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   oft += 4;
   pubDepth_->publish(std::move(depthMsg));
 
+  ///////////
+  // Leak sensor
+  atl_msgs::msg::Leak leakMsg;
+  leakMsg.header.stamp = tNow;
+  leakMsg.leak = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  pubLeak_->publish(std::move(leakMsg));
+
   iter_++;
 }
 
@@ -152,24 +162,20 @@ void TeensyInterfaceComponent::subJoystickCb(sensor_msgs::msg::Joy::SharedPtr &&
   const uint32_t time_ms = static_cast<uint32_t>((time_ns - t0_) / 1000000U);
   memcpy(u.data() + oft, &time_ms, 4);
   oft += 4;
-  // std::cout<<time_ms<<std::endl;
 
   // Servo Inputs
-  for (std::size_t i = 0; i < nServos; i++) {
-    // const float del = msg->inputs[i].delta;
-    const float del = msg-> axes[i];
-    memcpy(u.data() + oft, &del, 4);
-    oft += 4;
-  }
-  // std::cout<< msg-> axes[0]<<std::endl;
-  // std::cout<< msg-> axes[1]<<std::endl;
+  const float del1 = msg-> axes[1];
+  memcpy(u.data() + oft, &del1, 4);
+  oft += 4;
 
+  const float del2 = msg-> axes[4];
+  memcpy(u.data() + oft, &del2, 4);
+  oft += 4;
 
   // Sync byte
   const uint32_t sync = std::exchange(sync_, false);
   memcpy(u.data() + oft, &sync, 4);
   oft += 4;
-  // std::cout<<sync<<std::endl;
 
 
   udp_->sendMsg(u);

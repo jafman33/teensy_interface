@@ -1,4 +1,3 @@
-// Copyright 2023 ATL Robotics, USA
 
 #ifndef TEENSY_INTERFACE__TEENSY_INTERFACE_COMPONENT_HPP_
 #define TEENSY_INTERFACE__TEENSY_INTERFACE_COMPONENT_HPP_
@@ -9,8 +8,11 @@
 #include "udp_server.hpp"
 
 #include <atl_msgs/msg/depth.hpp>
+#include <atl_msgs/msg/leak.hpp>
+
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joy.hpp>
+
 
 #include <optional>
 #include <memory>
@@ -26,7 +28,7 @@ class UDPServer;
 
 struct TeensyUdpParams
 {
-  std::string teensy_ip{"10.250.225.93"};
+  std::string teensy_ip{"192.168.1.143"};
   uint16_t send_port{1560};
   uint16_t receive_port{1561};
   uint32_t receive_buffer_size{1024};
@@ -69,6 +71,7 @@ private:
   // Publishers
   rclcpp::Publisher<atl_msgs::msg::Depth>::SharedPtr pubDepth_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pubImu_;
+  rclcpp::Publisher<atl_msgs::msg::Leak>::SharedPtr pubLeak_;
 
   // Callbacks
   void subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg);
