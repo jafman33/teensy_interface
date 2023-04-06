@@ -66,6 +66,11 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
       udpCb(msg);
     });
 
+  tf_broadBoat_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+  tf_broadBody_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+  tf_broadActuator1_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+  tf_broadActuator2_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
   RCLCPP_INFO(get_logger(), "Teensy Interface Node started");
 }
 
@@ -127,13 +132,90 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   oft += 4;
   pubDepth_->publish(std::move(depthMsg));
 
-  ///////////
+  //////////////
   // Leak sensor
   atl_msgs::msg::Leak leakMsg;
   leakMsg.header.stamp = tNow;
   leakMsg.leak = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
   oft += 4;
   pubLeak_->publish(std::move(leakMsg));
+
+  /////////////
+  // Transforms
+  geometry_msgs::msg::TransformStamped t_boat;
+  geometry_msgs::msg::TransformStamped t_body;
+  geometry_msgs::msg::TransformStamped t_act1;
+  geometry_msgs::msg::TransformStamped t_act2;
+
+  // --------- boat
+  t_boat.header.stamp = tNow;
+  t_boat.header.frame_id = "world";
+  t_boat.child_frame_id = "boat";
+  // Boat Translation
+  t_boat.transform.translation.x = 0.0;
+  t_boat.transform.translation.y = 0.0;
+  t_boat.transform.translation.z = 0.25;
+  // Left actuator Rotation
+  tf2::Quaternion q0;
+  q0.setRPY(0, 0, 0);
+  t_boat.transform.rotation.x = q0.x();
+  t_boat.transform.rotation.y = q0.y();
+  t_boat.transform.rotation.z = q0.z();
+  t_boat.transform.rotation.w = q0.w();
+  // Send the transformation
+  tf_broadBoat_->sendTransform(t_boat);
+
+  // --------- Paravane
+  t_body.header.stamp = tNow;
+  t_body.header.frame_id = "boat";
+  t_body.child_frame_id = "paravane";
+  // Paravane Translation
+  t_body.transform.translation.x = -5.0;
+  t_body.transform.translation.y = 0.0;
+  t_body.transform.translation.z = -depthMsg.depth;
+  // Paravane Rotation
+  t_body.transform.rotation.x = imuMsg.orientation.x;
+  t_body.transform.rotation.y = imuMsg.orientation.y;
+  t_body.transform.rotation.z = imuMsg.orientation.z;
+  t_body.transform.rotation.w = imuMsg.orientation.w;
+  // Send the transformation
+  tf_broadBody_->sendTransform(t_body);
+
+  // --------- Left actuator
+  t_act1.header.stamp = tNow;
+  t_act1.header.frame_id = "paravane";
+  t_act1.child_frame_id = "actuator1";
+  // Left actuator Translation
+  t_act1.transform.translation.x = -0.25;
+  t_act1.transform.translation.y = 0.1;
+  t_act1.transform.translation.z = 0.0;
+  // Left actuator Rotation
+  tf2::Quaternion q1;
+  q1.setRPY(0, del1_, 0);
+  t_act1.transform.rotation.x = q1.x();
+  t_act1.transform.rotation.y = q1.y();
+  t_act1.transform.rotation.z = q1.z();
+  t_act1.transform.rotation.w = q1.w();
+  // Send the transformation
+  tf_broadBody_->sendTransform(t_act1);
+
+  // --------- Right Actuator
+  t_act2.header.stamp = tNow;
+  t_act2.header.frame_id = "paravane";
+  t_act2.child_frame_id = "actuator2";
+  // Right Actuator Translation
+  t_act2.transform.translation.x = -0.25;
+  t_act2.transform.translation.y = -0.1;
+  t_act2.transform.translation.z = 0.0;
+  // Right Actuator Rotation
+  tf2::Quaternion q2;
+  q2.setRPY(0, del2_, 0);
+  t_act2.transform.rotation.x = q2.x();
+  t_act2.transform.rotation.y = q2.y();
+  t_act2.transform.rotation.z = q2.z();
+  t_act2.transform.rotation.w = q2.w();
+  // Send the transformation
+  tf_broadBody_->sendTransform(t_act2);
 
   iter_++;
 }
@@ -164,12 +246,12 @@ void TeensyInterfaceComponent::subJoystickCb(sensor_msgs::msg::Joy::SharedPtr &&
   oft += 4;
 
   // Servo Inputs
-  const float del1 = msg-> axes[1];
-  memcpy(u.data() + oft, &del1, 4);
+  del1_ = msg-> axes[1];
+  memcpy(u.data() + oft, &del1_, 4);
   oft += 4;
 
-  const float del2 = msg-> axes[4];
-  memcpy(u.data() + oft, &del2, 4);
+  del2_ = msg-> axes[4];
+  memcpy(u.data() + oft, &del2_, 4);
   oft += 4;
 
   // Sync byte

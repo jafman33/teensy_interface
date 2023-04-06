@@ -13,6 +13,10 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
+// #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "tf2/LinearMath/Quaternion.h"
 
 #include <optional>
 #include <memory>
@@ -87,6 +91,16 @@ private:
   uint32_t task_ = 0;
   uint32_t ctrlMode_ = 0;
   std::mutex msgMtx_;
+
+  //tf
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadBoat_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadBody_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadActuator1_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadActuator2_;
+
+  //
+  float del1_;
+  float del2_;
 
 };
 

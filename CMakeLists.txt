@@ -9,30 +9,38 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(atl_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 # Component
 add_library(${PROJECT_NAME}_component SHARED
   src/${PROJECT_NAME}_component.cpp
   src/udp_server.cpp)
+
 ament_target_dependencies(${PROJECT_NAME}_component
   rclcpp
   rclcpp_components
   atl_msgs
+  tf2
+  tf2_ros
 )
-target_include_directories(${PROJECT_NAME}_component
-PUBLIC
+
+target_include_directories(${PROJECT_NAME}_component PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+
 rclcpp_components_register_nodes(${PROJECT_NAME}_component "atl::TeensyInterfaceComponent")
 
 # Composed executable
 add_executable(${PROJECT_NAME}_node
   src/${PROJECT_NAME}_node.cpp
 )
+
 ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
 )
+
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}_component
 )

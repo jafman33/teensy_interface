@@ -10,6 +10,8 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>atl_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
