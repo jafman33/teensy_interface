@@ -186,8 +186,8 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_act1.header.frame_id = "paravane";
   t_act1.child_frame_id = "actuator1";
   // Left actuator Translation
-  t_act1.transform.translation.x = -0.25;
-  t_act1.transform.translation.y = 0.1;
+  t_act1.transform.translation.x = -0.2075;
+  t_act1.transform.translation.y = 0.0085;
   t_act1.transform.translation.z = 0.0;
   // Left actuator Rotation
   tf2::Quaternion q1;
@@ -204,8 +204,8 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_act2.header.frame_id = "paravane";
   t_act2.child_frame_id = "actuator2";
   // Right Actuator Translation
-  t_act2.transform.translation.x = -0.25;
-  t_act2.transform.translation.y = -0.1;
+  t_act2.transform.translation.x = -0.2075;
+  t_act2.transform.translation.y = -0.0085;
   t_act2.transform.translation.z = 0.0;
   // Right Actuator Rotation
   tf2::Quaternion q2;
