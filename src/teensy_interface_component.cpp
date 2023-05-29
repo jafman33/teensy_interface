@@ -140,6 +140,22 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   oft += 4;
   pubLeak_->publish(std::move(leakMsg));
 
+  /////////////////
+  // Servo Feedback
+  atl_msgs::msg::Servos servoMsg;
+  servoMsg.header.stamp = tNow;
+  servoMsg.del1 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  servoMsg.del2 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  servoMsg.del3 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  servoMsg.del4 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  servoMsg.del5 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  oft += 4;
+  pubServos_->publish(std::move(servoMsg));
+
   /////////////
   // Transforms
   geometry_msgs::msg::TransformStamped t_boat;
@@ -227,13 +243,6 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
 void TeensyInterfaceComponent::subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg)
 {
   std::lock_guard lck(msgMtx_);
-
-  // if (msg->inputs.size() != prm_.n_servos) {
-  //   RCLCPP_ERROR(
-  //     get_logger(), "ServosInput message must have %lu inputs, received %lu.",
-  //     prm_.n_servos, msg->inputs.size());
-  //   throw std::runtime_error("ServosInput message has wrong number of inputs.");
-  // }
 
   // forward message through UDP
   std::vector<uint8_t> u((nServos + 2) * 4); 
