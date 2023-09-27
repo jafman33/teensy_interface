@@ -9,7 +9,8 @@
 
 #include <atl_msgs/msg/depth.hpp>
 #include <atl_msgs/msg/leak.hpp>
-// #include <atl_msgs/msg/servos.hpp>
+#include <atl_msgs/msg/servo_feedback.hpp>
+#include <atl_msgs/msg/servos_feedback.hpp>
 
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joy.hpp>
@@ -33,7 +34,7 @@ class UDPServer;
 
 struct TeensyUdpParams
 {
-  std::string teensy_ip{"192.168.1.143"};
+  std::string teensy_ip{"10.250.225.55"};
   uint16_t send_port{1560};
   uint16_t receive_port{1561};
   uint32_t receive_buffer_size{1024};
@@ -77,6 +78,7 @@ private:
   rclcpp::Publisher<atl_msgs::msg::Depth>::SharedPtr pubDepth_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pubImu_;
   rclcpp::Publisher<atl_msgs::msg::Leak>::SharedPtr pubLeak_;
+  rclcpp::Publisher<atl_msgs::msg::ServosFeedback>::SharedPtr pubServos_;
 
   // Callbacks
   void subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg);
@@ -102,6 +104,9 @@ private:
   //
   float del1_;
   float del2_;
+  float del3_;
+  float del4_;
+  float del5_;
 
 };
 

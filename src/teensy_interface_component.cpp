@@ -17,7 +17,7 @@
 
 using std::string;
 
-constexpr static std::size_t nServos = 2;
+constexpr static std::size_t nServos = 5;
 
 namespace atl
 {
@@ -53,6 +53,9 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
   pubLeak_ = create_publisher<atl_msgs::msg::Leak>(
     "leak", rclcpp::SystemDefaultsQoS());
 
+  pubServos_ = create_publisher<atl_msgs::msg::ServosFeedback>(
+    "servo_feedback", rclcpp::SystemDefaultsQoS());
+
   // set up UDP communication
   udp_->init(
     prm_.udp.receive_buffer_size,
@@ -80,8 +83,8 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
 //////////////////
 void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
 {
-  // Lin_acc(3) + Ang_vel(3) + Quat(4) + depth(1) + temp(1) + leak(1)
-  constexpr std::size_t msgLen = (3+3+4+1+1+1) * 4;
+  // Lin_acc(3) + Ang_vel(3) + Quat(4) + depth(1) + temp(1) + leak(1) + servo(5)
+  constexpr std::size_t msgLen = (3+3+4+1+1+1+5) * 4;
 
   if (msg.data.size() != msgLen) {
     RCLCPP_ERROR(
@@ -140,21 +143,42 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   oft += 4;
   pubLeak_->publish(std::move(leakMsg));
 
+
   /////////////////
   // Servo Feedback
-  atl_msgs::msg::Servos servoMsg;
-  servoMsg.header.stamp = tNow;
-  servoMsg.del1 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  
+  atl_msgs::msg::ServoFeedback servoMsg1;
+  servoMsg1.header.stamp = tNow;
+  servoMsg1.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
   oft += 4;
-  servoMsg.del2 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  atl_msgs::msg::ServoFeedback servoMsg2;
+  servoMsg2.header.stamp = tNow;
+  servoMsg2.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
   oft += 4;
-  servoMsg.del3 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  atl_msgs::msg::ServoFeedback servoMsg3;
+  servoMsg3.header.stamp = tNow;
+  servoMsg3.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
   oft += 4;
-  servoMsg.del4 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  atl_msgs::msg::ServoFeedback servoMsg4;
+  servoMsg4.header.stamp = tNow;
+  servoMsg4.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
   oft += 4;
-  servoMsg.del5 = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  atl_msgs::msg::ServoFeedback servoMsg5;
+  servoMsg5.header.stamp = tNow;
+  servoMsg5.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
   oft += 4;
-  pubServos_->publish(std::move(servoMsg));
+
+
+  atl_msgs::msg::ServosFeedback servosMsg;
+  servosMsg.header.stamp = tNow;
+  servosMsg.feedback[0] = servoMsg1;
+  servosMsg.feedback[1] = servoMsg2;
+  servosMsg.feedback[2] = servoMsg3;
+  servosMsg.feedback[3] = servoMsg4;
+  servosMsg.feedback[4] = servoMsg5;
+  
+  pubServos_->publish(std::move(servosMsg));
+
 
   /////////////
   // Transforms
@@ -261,6 +285,18 @@ void TeensyInterfaceComponent::subJoystickCb(sensor_msgs::msg::Joy::SharedPtr &&
 
   del2_ = msg-> axes[4];
   memcpy(u.data() + oft, &del2_, 4);
+  oft += 4;
+
+  del3_ = 0;
+  memcpy(u.data() + oft, &del3_, 4);
+  oft += 4;
+
+  del4_ = 0;
+  memcpy(u.data() + oft, &del4_, 4);
+  oft += 4;
+
+  del5_ = 0;
+  memcpy(u.data() + oft, &del5_, 4);
   oft += 4;
 
   // Sync byte
