@@ -34,7 +34,7 @@ class UDPServer;
 
 struct TeensyUdpParams
 {
-  std::string teensy_ip{"10.250.225.55"};
+  std::string teensy_ip{"192.168.2.3"};
   uint16_t send_port{1560};
   uint16_t receive_port{1561};
   uint32_t receive_buffer_size{1024};
