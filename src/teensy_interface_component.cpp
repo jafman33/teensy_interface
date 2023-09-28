@@ -151,6 +151,10 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   servoMsg1.header.stamp = tNow;
   servoMsg1.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
   oft += 4;
+
+
+
+
   atl_msgs::msg::ServoFeedback servoMsg2;
   servoMsg2.header.stamp = tNow;
   servoMsg2.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
@@ -169,13 +173,15 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   oft += 4;
 
 
+
   atl_msgs::msg::ServosFeedback servosMsg;
-  servosMsg.header.stamp = tNow;
-  servosMsg.feedback[0] = servoMsg1;
-  servosMsg.feedback[1] = servoMsg2;
-  servosMsg.feedback[2] = servoMsg3;
-  servosMsg.feedback[3] = servoMsg4;
-  servosMsg.feedback[4] = servoMsg5;
+  servosMsg.feedback.resize(5);
+
+  servosMsg.feedback[0].delta = servoMsg1.delta;
+  servosMsg.feedback[1].delta = servoMsg2.delta;
+  servosMsg.feedback[2].delta = servoMsg3.delta;
+  servosMsg.feedback[3].delta = servoMsg4.delta;
+  servosMsg.feedback[4].delta = servoMsg5.delta;
   
   pubServos_->publish(std::move(servosMsg));
 
