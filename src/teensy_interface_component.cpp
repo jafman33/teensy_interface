@@ -227,15 +227,15 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   // Send the transformation
   tf_broadBody_->sendTransform(t_body);
 
-  // --------- Left actuator
+// --------- Main Wing actuator
   t_act1.header.stamp = tNow;
   t_act1.header.frame_id = "paravane";
-  t_act1.child_frame_id = "actuator1";
-  // Left actuator Translation
-  t_act1.transform.translation.x = -0.2075;
-  t_act1.transform.translation.y = 0.0085;
+  t_act1.child_frame_id = "main_wing";
+  // Main Wing actuator Translation
+  t_act1.transform.translation.x = 0.1;
+  t_act1.transform.translation.y = 0.0;
   t_act1.transform.translation.z = 0.0;
-  // Left actuator Rotation
+  // Main Wing actuator Rotation
   tf2::Quaternion q1;
   q1.setRPY(0, del1_, 0);
   t_act1.transform.rotation.x = q1.x();
@@ -245,23 +245,61 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   // Send the transformation
   tf_broadBody_->sendTransform(t_act1);
 
-  // --------- Right Actuator
-  t_act2.header.stamp = tNow;
-  t_act2.header.frame_id = "paravane";
-  t_act2.child_frame_id = "actuator2";
-  // Right Actuator Translation
-  t_act2.transform.translation.x = -0.2075;
-  t_act2.transform.translation.y = -0.0085;
-  t_act2.transform.translation.z = 0.0;
-  // Right Actuator Rotation
-  tf2::Quaternion q2;
-  q2.setRPY(0, del2_, 0);
-  t_act2.transform.rotation.x = q2.x();
-  t_act2.transform.rotation.y = q2.y();
-  t_act2.transform.rotation.z = q2.z();
-  t_act2.transform.rotation.w = q2.w();
+  // --------- Top Fin actuator
+  t_act1.header.stamp = tNow;
+  t_act1.header.frame_id = "paravane";
+  t_act1.child_frame_id = "actuator1";
+  // Actuator Translation
+  t_act1.transform.translation.x = -0.2;
+  t_act1.transform.translation.y = 0.0;
+  t_act1.transform.translation.z = 0.05;
+  // Actuator Rotation
+  tf2::Quaternion q1;
+  q1.setRPY(0, 0, del2_);
+  t_act1.transform.rotation.x = q1.x();
+  t_act1.transform.rotation.y = q1.y();
+  t_act1.transform.rotation.z = q1.z();
+  t_act1.transform.rotation.w = q1.w();
   // Send the transformation
-  tf_broadBody_->sendTransform(t_act2);
+  tf_broadBody_->sendTransform(t_act1);
+
+
+
+  // // --------- Left actuator
+  // t_act1.header.stamp = tNow;
+  // t_act1.header.frame_id = "paravane";
+  // t_act1.child_frame_id = "actuator1";
+  // // Left actuator Translation
+  // t_act1.transform.translation.x = -0.2075;
+  // t_act1.transform.translation.y = 0.0085;
+  // t_act1.transform.translation.z = 0.0;
+  // // Left actuator Rotation
+  // tf2::Quaternion q1;
+  // q1.setRPY(0, del1_, 0);
+  // t_act1.transform.rotation.x = q1.x();
+  // t_act1.transform.rotation.y = q1.y();
+  // t_act1.transform.rotation.z = q1.z();
+  // t_act1.transform.rotation.w = q1.w();
+  // // Send the transformation
+  // tf_broadBody_->sendTransform(t_act1);
+
+  // // --------- Right Actuator
+  // t_act2.header.stamp = tNow;
+  // t_act2.header.frame_id = "paravane";
+  // t_act2.child_frame_id = "actuator2";
+  // // Right Actuator Translation
+  // t_act2.transform.translation.x = -0.2075;
+  // t_act2.transform.translation.y = -0.0085;
+  // t_act2.transform.translation.z = 0.0;
+  // // Right Actuator Rotation
+  // tf2::Quaternion q2;
+  // q2.setRPY(0, del2_, 0);
+  // t_act2.transform.rotation.x = q2.x();
+  // t_act2.transform.rotation.y = q2.y();
+  // t_act2.transform.rotation.z = q2.z();
+  // t_act2.transform.rotation.w = q2.w();
+  // // Send the transformation
+  // tf_broadBody_->sendTransform(t_act2);
 
   iter_++;
 }
