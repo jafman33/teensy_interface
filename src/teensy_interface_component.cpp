@@ -190,8 +190,10 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   // Transforms
   geometry_msgs::msg::TransformStamped t_boat;
   geometry_msgs::msg::TransformStamped t_body;
+  geometry_msgs::msg::TransformStamped t_act_w;
   geometry_msgs::msg::TransformStamped t_act1;
   geometry_msgs::msg::TransformStamped t_act2;
+  geometry_msgs::msg::TransformStamped t_act3;
 
   // --------- boat
   t_boat.header.stamp = tNow;
@@ -201,7 +203,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_boat.transform.translation.x = 0.0;
   t_boat.transform.translation.y = 0.0;
   t_boat.transform.translation.z = 0.25;
-  // Left actuator Rotation
+  // Boat actuator Rotation
   tf2::Quaternion q0;
   q0.setRPY(0, 0, 0);
   t_boat.transform.rotation.x = q0.x();
@@ -228,24 +230,24 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   tf_broadBody_->sendTransform(t_body);
 
 // --------- Main Wing actuator
-  t_act1.header.stamp = tNow;
-  t_act1.header.frame_id = "paravane";
-  t_act1.child_frame_id = "main_wing";
+  t_act_w.header.stamp = tNow;
+  t_act_w.header.frame_id = "paravane";
+  t_act_w.child_frame_id = "main_wing";
   // Main Wing actuator Translation
-  t_act1.transform.translation.x = 0.1;
-  t_act1.transform.translation.y = 0.0;
-  t_act1.transform.translation.z = 0.0;
+  t_act_w.transform.translation.x = 0.1;
+  t_act_w.transform.translation.y = 0.0;
+  t_act_w.transform.translation.z = 0.0;
   // Main Wing actuator Rotation
-  tf2::Quaternion q1;
-  q1.setRPY(0, del1_, 0);
-  t_act1.transform.rotation.x = q1.x();
-  t_act1.transform.rotation.y = q1.y();
-  t_act1.transform.rotation.z = q1.z();
-  t_act1.transform.rotation.w = q1.w();
+  tf2::Quaternion qw;
+  qw.setRPY(0, del1_, 0);
+  t_act_w.transform.rotation.x = qw.x();
+  t_act_w.transform.rotation.y = qw.y();
+  t_act_w.transform.rotation.z = qw.z();
+  t_act_w.transform.rotation.w = qw.w();
   // Send the transformation
-  tf_broadBody_->sendTransform(t_act1);
+  tf_broadBody_->sendTransform(t_act_w);
 
-  // --------- Top Fin actuator
+  // --------- Top Fin1 actuator
   t_act1.header.stamp = tNow;
   t_act1.header.frame_id = "paravane";
   t_act1.child_frame_id = "actuator1";
@@ -255,7 +257,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_act1.transform.translation.z = 0.05;
   // Actuator Rotation
   tf2::Quaternion q1;
-  q1.setRPY(0, 0, del2_);
+  q1.setRPY(0, 0, del1_);
   t_act1.transform.rotation.x = q1.x();
   t_act1.transform.rotation.y = q1.y();
   t_act1.transform.rotation.z = q1.z();
@@ -263,6 +265,43 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   // Send the transformation
   tf_broadBody_->sendTransform(t_act1);
 
+
+  // --------- Bottom Fin2 actuator
+  t_act2.header.stamp = tNow;
+  t_act2.header.frame_id = "paravane";
+  t_act2.child_frame_id = "actuator2";
+  // Actuator Translation
+  t_act2.transform.translation.x = -0.2;
+  t_act2.transform.translation.y = 0.02;
+  t_act2.transform.translation.z = -0.035;
+  // Actuator Rotation
+  tf2::Quaternion q2;
+  q2.setRPY(0, 0, del1_);
+  t_act2.transform.rotation.x = q2.x();
+  t_act2.transform.rotation.y = q2.y();
+  t_act2.transform.rotation.z = q2.z();
+  t_act2.transform.rotation.w = q2.w();
+  // Send the transformation
+  tf_broadBody_->sendTransform(t_act2);
+
+
+    // --------- Bottot Fin3 actuator
+  t_act3.header.stamp = tNow;
+  t_act3.header.frame_id = "paravane";
+  t_act3.child_frame_id = "actuator3";
+  // Actuator Translation
+  t_act3.transform.translation.x = -0.2;
+  t_act3.transform.translation.y = 0.02;
+  t_act3.transform.translation.z = -0.035;
+  // Actuator Rotation
+  tf2::Quaternion q3;
+  q3.setRPY(0, 0, del1_);
+  t_act3.transform.rotation.x = q3.x();
+  t_act3.transform.rotation.y = q3.y();
+  t_act3.transform.rotation.z = q3.z();
+  t_act3.transform.rotation.w = q3.w();
+  // Send the transformation
+  tf_broadBody_->sendTransform(t_act3);
 
 
   // // --------- Left actuator
