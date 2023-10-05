@@ -29,18 +29,15 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
 : Node("teensy_interface", options),
   udp_(std::make_unique<atl::UDPServer>(true))
 {
-  // initParamsInNode(*this, prm_, "", false, true);
-  // if (prm_.n_servos > nServos || prm_.n_servos < 1) {
-  //   throw std::runtime_error("Unsupported number of servos");
-  // }
+
 
   // Create the subscriptions
   rclcpp::SensorDataQoS inputQoS;
   inputQoS.keep_last(1);
-  subJoystick_ = create_subscription<sensor_msgs::msg::Joy>(
-    "joy", inputQoS,
-    [this](sensor_msgs::msg::Joy::SharedPtr msg) {
-      subJoystickCb(std::move(msg));
+  subServosInput_ = create_subscription<atl_msgs::msg::ServosInput>(
+    "servos_input", inputQoS,
+    [this](atl_msgs::msg::ServosInput::SharedPtr msg) {
+      subServosInputCb(std::move(msg));
     });
 
   // Create the publishers
@@ -53,8 +50,8 @@ TeensyInterfaceComponent::TeensyInterfaceComponent(const rclcpp::NodeOptions & o
   pubLeak_ = create_publisher<atl_msgs::msg::Leak>(
     "leak", rclcpp::SystemDefaultsQoS());
 
-  pubServos_ = create_publisher<atl_msgs::msg::ServosFeedback>(
-    "servo_feedback", rclcpp::SystemDefaultsQoS());
+  pubServosFeedback_ = create_publisher<atl_msgs::msg::ServosFeedback>(
+    "servos_feedback", rclcpp::SystemDefaultsQoS());
 
   // set up UDP communication
   udp_->init(
@@ -150,40 +147,40 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   atl_msgs::msg::ServoFeedback servoMsg1;
   servoMsg1.header.stamp = tNow;
   servoMsg1.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  servoFeedback1_ = servoMsg1.delta;
   oft += 4;
-
-
-
-
   atl_msgs::msg::ServoFeedback servoMsg2;
   servoMsg2.header.stamp = tNow;
   servoMsg2.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  servoFeedback2_ = servoMsg2.delta;
   oft += 4;
   atl_msgs::msg::ServoFeedback servoMsg3;
   servoMsg3.header.stamp = tNow;
   servoMsg3.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  servoFeedback3_ = servoMsg3.delta;
   oft += 4;
   atl_msgs::msg::ServoFeedback servoMsg4;
   servoMsg4.header.stamp = tNow;
   servoMsg4.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  servoFeedback4_ = servoMsg4.delta;
   oft += 4;
   atl_msgs::msg::ServoFeedback servoMsg5;
   servoMsg5.header.stamp = tNow;
   servoMsg5.delta = (*(reinterpret_cast<const float *>(msg.data.data() + oft)));
+  servoFeedback5_ = servoMsg5.delta;
   oft += 4;
-
 
 
   atl_msgs::msg::ServosFeedback servosMsg;
   servosMsg.feedback.resize(5);
 
-  servosMsg.feedback[0].delta = servoMsg1.delta;
-  servosMsg.feedback[1].delta = servoMsg2.delta;
-  servosMsg.feedback[2].delta = servoMsg3.delta;
-  servosMsg.feedback[3].delta = servoMsg4.delta;
-  servosMsg.feedback[4].delta = servoMsg5.delta;
+  servosMsg.feedback[0] = servoMsg1;
+  servosMsg.feedback[1] = servoMsg2;
+  servosMsg.feedback[2] = servoMsg3;
+  servosMsg.feedback[3] = servoMsg4;
+  servosMsg.feedback[4] = servoMsg5;
   
-  pubServos_->publish(std::move(servosMsg));
+  pubServosFeedback_->publish(std::move(servosMsg));
 
 
   /////////////
@@ -239,7 +236,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_act_w.transform.translation.z = 0.0;
   // Main Wing actuator Rotation
   tf2::Quaternion qw;
-  qw.setRPY(0, del1_, 0);
+  qw.setRPY(0, servoInput1_, 0);
   t_act_w.transform.rotation.x = qw.x();
   t_act_w.transform.rotation.y = qw.y();
   t_act_w.transform.rotation.z = qw.z();
@@ -247,7 +244,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   // Send the transformation
   tf_broadBody_->sendTransform(t_act_w);
 
-  // --------- Top Fin1 actuator
+  // --------- bottom tail actuator
   t_act1.header.stamp = tNow;
   t_act1.header.frame_id = "paravane";
   t_act1.child_frame_id = "actuator1";
@@ -257,7 +254,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_act1.transform.translation.z = 0.05;
   // Actuator Rotation
   tf2::Quaternion q1;
-  q1.setRPY(0, 0, del1_);
+  q1.setRPY(0, 0, servoFeedback2_);
   t_act1.transform.rotation.x = q1.x();
   t_act1.transform.rotation.y = q1.y();
   t_act1.transform.rotation.z = q1.z();
@@ -266,7 +263,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   tf_broadBody_->sendTransform(t_act1);
 
 
-  // --------- Bottom Fin2 actuator
+  // --------- left tail actuator
   t_act2.header.stamp = tNow;
   t_act2.header.frame_id = "paravane";
   t_act2.child_frame_id = "actuator2";
@@ -276,7 +273,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_act2.transform.translation.z = -0.035;
   // Actuator Rotation
   tf2::Quaternion q2;
-  q2.setRPY(0, 0, del1_);
+  q2.setRPY(0, 0, servoFeedback3_);
   t_act2.transform.rotation.x = q2.x();
   t_act2.transform.rotation.y = q2.y();
   t_act2.transform.rotation.z = q2.z();
@@ -285,7 +282,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   tf_broadBody_->sendTransform(t_act2);
 
 
-    // --------- Bottot Fin3 actuator
+    // --------- right tail actuator
   t_act3.header.stamp = tNow;
   t_act3.header.frame_id = "paravane";
   t_act3.child_frame_id = "actuator3";
@@ -295,50 +292,13 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
   t_act3.transform.translation.z = -0.035;
   // Actuator Rotation
   tf2::Quaternion q3;
-  q3.setRPY(0, 0, del1_);
+  q3.setRPY(0, 0, servoFeedback4_);
   t_act3.transform.rotation.x = q3.x();
   t_act3.transform.rotation.y = q3.y();
   t_act3.transform.rotation.z = q3.z();
   t_act3.transform.rotation.w = q3.w();
   // Send the transformation
   tf_broadBody_->sendTransform(t_act3);
-
-
-  // // --------- Left actuator
-  // t_act1.header.stamp = tNow;
-  // t_act1.header.frame_id = "paravane";
-  // t_act1.child_frame_id = "actuator1";
-  // // Left actuator Translation
-  // t_act1.transform.translation.x = -0.2075;
-  // t_act1.transform.translation.y = 0.0085;
-  // t_act1.transform.translation.z = 0.0;
-  // // Left actuator Rotation
-  // tf2::Quaternion q1;
-  // q1.setRPY(0, del1_, 0);
-  // t_act1.transform.rotation.x = q1.x();
-  // t_act1.transform.rotation.y = q1.y();
-  // t_act1.transform.rotation.z = q1.z();
-  // t_act1.transform.rotation.w = q1.w();
-  // // Send the transformation
-  // tf_broadBody_->sendTransform(t_act1);
-
-  // // --------- Right Actuator
-  // t_act2.header.stamp = tNow;
-  // t_act2.header.frame_id = "paravane";
-  // t_act2.child_frame_id = "actuator2";
-  // // Right Actuator Translation
-  // t_act2.transform.translation.x = -0.2075;
-  // t_act2.transform.translation.y = -0.0085;
-  // t_act2.transform.translation.z = 0.0;
-  // // Right Actuator Rotation
-  // tf2::Quaternion q2;
-  // q2.setRPY(0, del2_, 0);
-  // t_act2.transform.rotation.x = q2.x();
-  // t_act2.transform.rotation.y = q2.y();
-  // t_act2.transform.rotation.z = q2.z();
-  // t_act2.transform.rotation.w = q2.w();
-  // // Send the transformation
-  // tf_broadBody_->sendTransform(t_act2);
 
   iter_++;
 }
@@ -347,7 +307,7 @@ void TeensyInterfaceComponent::udpCb(const UDPServer::UDPMsg & msg)
 // ///////////////
 // UDP Msg Forward
 // ///////////////
-void TeensyInterfaceComponent::subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg)
+void TeensyInterfaceComponent::subServosInputCb(atl_msgs::msg::ServosInput::SharedPtr && msg)
 {
   std::lock_guard lck(msgMtx_);
 
@@ -362,24 +322,24 @@ void TeensyInterfaceComponent::subJoystickCb(sensor_msgs::msg::Joy::SharedPtr &&
   oft += 4;
 
   // Servo Inputs
-  del1_ = msg-> axes[1];
-  memcpy(u.data() + oft, &del1_, 4);
+  servoInput1_ = msg-> inputs[0].delta;
+  memcpy(u.data() + oft, &servoInput1_, 4);
   oft += 4;
 
-  del2_ = msg-> axes[4];
-  memcpy(u.data() + oft, &del2_, 4);
+  servoInput2_ = msg-> inputs[1].delta;
+  memcpy(u.data() + oft, &servoInput2_, 4);
   oft += 4;
 
-  del3_ = 0;
-  memcpy(u.data() + oft, &del3_, 4);
+  servoInput3_ = msg-> inputs[2].delta;
+  memcpy(u.data() + oft, &servoInput3_, 4);
   oft += 4;
 
-  del4_ = 0;
-  memcpy(u.data() + oft, &del4_, 4);
+  servoInput4_ = msg-> inputs[3].delta;
+  memcpy(u.data() + oft, &servoInput4_, 4);
   oft += 4;
 
-  del5_ = 0;
-  memcpy(u.data() + oft, &del5_, 4);
+  servoInput5_ = 0.0;
+  memcpy(u.data() + oft, &servoInput5_, 4);
   oft += 4;
 
   // Sync byte

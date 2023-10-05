@@ -11,9 +11,9 @@
 #include <atl_msgs/msg/leak.hpp>
 #include <atl_msgs/msg/servo_feedback.hpp>
 #include <atl_msgs/msg/servos_feedback.hpp>
+#include <atl_msgs/msg/servos_input.hpp>
 
 #include <sensor_msgs/msg/imu.hpp>
-#include <sensor_msgs/msg/joy.hpp>
 
 // #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -72,16 +72,16 @@ public:
 
 private:
   // Subscriptions
-  rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subJoystick_;
+  rclcpp::Subscription<atl_msgs::msg::ServosInput>::SharedPtr subServosInput_;
 
   // Publishers
   rclcpp::Publisher<atl_msgs::msg::Depth>::SharedPtr pubDepth_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pubImu_;
   rclcpp::Publisher<atl_msgs::msg::Leak>::SharedPtr pubLeak_;
-  rclcpp::Publisher<atl_msgs::msg::ServosFeedback>::SharedPtr pubServos_;
+  rclcpp::Publisher<atl_msgs::msg::ServosFeedback>::SharedPtr pubServosFeedback_;
 
   // Callbacks
-  void subJoystickCb(sensor_msgs::msg::Joy::SharedPtr && msg);
+  void subServosInputCb(atl_msgs::msg::ServosInput::SharedPtr && msg);
   void udpCb(const UDPServer::UDPMsg & msg);
 
   // State Variables
@@ -102,11 +102,18 @@ private:
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadActuator2_;
 
   //
-  float del1_;
-  float del2_;
-  float del3_;
-  float del4_;
-  float del5_;
+  float servoInput1_;
+  float servoInput2_;
+  float servoInput3_;
+  float servoInput4_;
+  float servoInput5_;
+
+  // feedback
+  float servoFeedback1_;
+  float servoFeedback2_;
+  float servoFeedback3_;
+  float servoFeedback4_;
+  float servoFeedback5_;
 
 };
 
